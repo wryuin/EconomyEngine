@@ -18,18 +18,19 @@ public class EconomyEngine extends JavaPlugin {
     private BackupManager backupManager;
     private UpdateChecker updateChecker;
 
+
     @Override
     public void reloadConfig() {
         super.reloadConfig();
-        getConfigManager().setup();
+        configManager.onConfigReload();
     }
 
     @Override
     public void onEnable() {
-
+        this.configManager = new ConfigManager(this);
+        configManager.initialLoad();
         instance = this;
         saveDefaultConfig();
-        configManager = new ConfigManager(this);
         setupDatabase();
         getCommand("economy").setExecutor(new EconomyCommand(this));
         getCommand("economy").setTabCompleter(new EconomyTabCompleter(this));
@@ -37,8 +38,6 @@ public class EconomyEngine extends JavaPlugin {
         this.cacheManager = new CacheManager(this);
         this.backupManager = new BackupManager(this);
         this.updateChecker = new UpdateChecker(this);
-        this.configManager = new ConfigManager(this);
-        configManager.setup();
         saveResource("messages.yml", false);
         Messages.init(this);
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
