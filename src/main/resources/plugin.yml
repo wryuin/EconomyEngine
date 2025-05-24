@@ -1,0 +1,31 @@
+name: EconomyEngine
+version: '${project.version}'
+main: me.wryuin.EconomyEngine
+api-version: '1.16'
+softdepend: [PlaceholderAPI]
+commands:
+  economy:
+    description: Управление экономикой сервера
+    usage: /economy <create/set/add/remove/give>
+    permission: economyengine.use
+    permission-message: У вас нет прав на эту команду!
+    
+permissions:
+  economyengine.use:
+    description: Доступ к базовым командам экономики
+    default: op
+  economyengine.create:
+    description: Создание новых валют
+    default: op
+  economyengine.set:
+    description: Установка баланса игрока
+    default: op
+  economyengine.add:
+    description: Добавление баланса игроку
+    default: op
+  economyengine.remove:
+    description: Удаление баланса у игрока
+    default: op
+  economyengine.give:
+    description: Передача валюты другому игроку
+    default: true
