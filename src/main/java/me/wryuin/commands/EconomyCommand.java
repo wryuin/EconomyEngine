@@ -2,6 +2,7 @@ package me.wryuin.commands;
 
 import me.wryuin.EconomyEngine;
 import me.wryuin.database.DataBase;
+import me.wryuin.utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -18,7 +19,7 @@ public class EconomyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (args.length == 0) {
+        if(args.length == 0) {
             sendHelp(sender);
             return true;
         }
@@ -26,6 +27,13 @@ public class EconomyCommand implements CommandExecutor {
         DataBase db = plugin.getDatabase();
 
         switch (args[0].toLowerCase()) {
+            case "reload":
+                if(!sender.hasPermission("economyengine.reload")) {
+                    sender.sendMessage(Messages.get("no-permission"));
+                    return true;
+                }
+                return ReloadCommand.execute(plugin, sender, cmd, label, args);
+
             case "create":
                 if (!sender.hasPermission("economyengine.create")) {
                     sender.sendMessage("§cУ вас нет прав на эту команду!");

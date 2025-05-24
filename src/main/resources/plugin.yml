@@ -29,3 +29,6 @@ permissions:
   economyengine.give:
     description: Передача валюты другому игроку
     default: true
+    economyengine.reload:
+      description: Reload plugin data
+      default: op

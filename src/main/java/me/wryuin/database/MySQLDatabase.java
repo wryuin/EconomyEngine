@@ -1,8 +1,8 @@
 package me.wryuin.database;
 
-
-import me.wryuin.Currency;
 import me.wryuin.EconomyEngine;
+import me.wryuin.data.PlayerData;
+import me.wryuin.Currency;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -22,6 +22,38 @@ public class MySQLDatabase implements DataBase {
 
     private FileConfiguration getConfig() {
         return plugin.getConfig();
+    }
+
+    @Override
+    public void reload() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+            initialize();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("MySQL reload failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public PlayerData loadPlayerData(UUID uuid) {
+        PlayerData data = new PlayerData(uuid);
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT currency_name, amount FROM balances WHERE player_uuid = ?")) {
+            stmt.setString(1, uuid.toString());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                data.setBalance(
+                        rs.getString("currency_name"),
+                        rs.getDouble("amount")
+                );
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to load player data: " + e.getMessage());
+        }
+        return data;
     }
 
     @Override

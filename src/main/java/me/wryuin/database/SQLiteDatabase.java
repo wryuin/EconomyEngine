@@ -3,19 +3,42 @@ package me.wryuin.database;
 import me.wryuin.Currency;
 import me.wryuin.EconomyEngine;
 import org.bukkit.OfflinePlayer;
-
+import me.wryuin.data.PlayerData;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class SQLiteDatabase implements DataBase {
     private final EconomyEngine plugin;
     private Connection connection;
+    private FileConfiguration dataConfig;
 
     public SQLiteDatabase(EconomyEngine plugin) {
         this.plugin = plugin;
+    }
+
+    @Override
+    public PlayerData loadPlayerData(UUID uuid) {
+        PlayerData data = new PlayerData(uuid);
+        ConfigurationSection playerSection = dataConfig.getConfigurationSection("players." + uuid);
+        if (playerSection != null) {
+            ConfigurationSection balances = playerSection.getConfigurationSection("balances");
+            if (balances != null) {
+                for (String currency : balances.getKeys(false)) {
+                    data.setBalance(currency, balances.getDouble(currency));
+                }
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public void reload() {
+        initialize();
     }
 
     @Override

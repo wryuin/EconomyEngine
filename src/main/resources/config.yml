@@ -1,12 +1,9 @@
-# Тип базы данных (YAML, SQLITE, MYSQL)
 database:
-  type: YAML
+  type: SQLITE
 
-# Интервал автосохранения в минутах
 autosave:
-  interval: 5
+  interval: 2
 
-# Настройки MySQL (если используется)
 mysql:
   host: localhost
   port: 3306
