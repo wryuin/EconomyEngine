@@ -71,8 +71,6 @@ public class YamlDatabase implements DataBase {
     @Override
     public boolean deleteCurrency(String name) {
         if (!currencyExists(name)) return false;
-
-        // Удаляем все балансы этой валюты
         ConfigurationSection playersSection = dataConfig.getConfigurationSection("players");
         if (playersSection != null) {
             for (String playerId : playersSection.getKeys(false)) {

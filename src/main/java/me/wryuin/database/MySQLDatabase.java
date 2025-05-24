@@ -69,7 +69,7 @@ public class MySQLDatabase implements DataBase {
 
     @Override
     public void saveAll() {
-        // Для MySQL автосохранение происходит автоматически
+        // mySql have auto-save
     }
 
     @Override

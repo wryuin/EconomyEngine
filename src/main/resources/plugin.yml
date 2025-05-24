@@ -9,7 +9,7 @@ commands:
     usage: /economy <create/set/add/remove/give>
     permission: economyengine.use
     permission-message: У вас нет прав на эту команду!
-    
+
 permissions:
   economyengine.use:
     description: Доступ к базовым командам экономики

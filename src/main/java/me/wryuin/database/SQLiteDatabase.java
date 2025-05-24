@@ -33,12 +33,12 @@ public class SQLiteDatabase implements DataBase {
 
     private void createTables() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
-            // Таблица валют
+            // Table for currencies
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS currencies (" +
                     "name TEXT PRIMARY KEY," +
                     "symbol TEXT NOT NULL)");
 
-            // Таблица балансов
+            // Table for balances
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS balances (" +
                     "player_uuid TEXT NOT NULL," +
                     "currency_name TEXT NOT NULL," +
@@ -46,7 +46,7 @@ public class SQLiteDatabase implements DataBase {
                     "PRIMARY KEY (player_uuid, currency_name)," +
                     "FOREIGN KEY (currency_name) REFERENCES currencies(name))");
 
-            // Таблица логов
+            // Table for logs
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS transaction_logs (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "player_uuid TEXT NOT NULL," +
@@ -59,7 +59,7 @@ public class SQLiteDatabase implements DataBase {
 
     @Override
     public void saveAll() {
-        // Для SQLite автосохранение происходит автоматически
+        // Automatic
     }
 
     @Override
@@ -83,7 +83,6 @@ public class SQLiteDatabase implements DataBase {
         if (!currencyExists(name)) return false;
 
         try {
-            // Удаляем все связанные балансы и логи в транзакции
             connection.setAutoCommit(false);
 
             try (PreparedStatement stmt = connection.prepareStatement(
