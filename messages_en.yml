@@ -1,0 +1,87 @@
+# Before uploading on the server rename file to messages.yml for right using!
+# ============= Messages =============
+prefix: "&8[&6EconomyEngine&8] "
+no-permission: "&cYou don't have permission"
+player-not-found: "&Player &e{0} &cnot found!"
+currency-not-found: "&cCurrency &e{0} &cdoesn't exist!"
+
+# ============= commands =============
+commands:
+  economy:
+    reload:
+      success: "&aConfiguration reloaded: &e{0}"
+      error: "&cInvalid reload type: &e{0}"
+      types: "&fAllowed types: &eall&f, &econfig&f, &edata"
+    help-header: "&6===== EconomyEngine Help ====="
+    help-reload: "&e/economy reload <all|config|data> - Reload data"
+    help:
+      create: "&e/economy create <name> [symbol] - Create a new currency"
+      set: "&e/economy set <amount> <currency_name> <player> - Set balance"
+      add: "&e/economy add <amount> <currency_name> <player> - Add to balance"
+      remove: "&e/economy remove <amount> <currency_name> <player> - Remove from balance"
+      give: "&e/economy give <amount> <currency_name> <player> - Transfer balance"
+      top: "&e/economy top <currency_name> - Top 10 richest players"
+    usage:
+      create: "&cUsage: /economy create <name> [symbol]"
+      set: "&cUsage: /economy set <amount> <currency_name> <player>"
+      add: "&cUsage: /economy add <amount> <currency_name> <player>"
+      remove: "&cUsage: /economy remove <amount> <currency_name> <player>"
+      give: "&cUsage: /economy give <amount> <currency_name> <player>"
+      top: "&cUsage: /economy top <currency>"
+    created: "&aCurrency &e{0} &acreated!"
+    deleted: "&aCurrency &e{0} &adeleted!"
+    set: "&aPlayer &e{0}'s &abalance for currency &e{1} &aset to &6{2}"
+    add: "&aAdded &6{0} {1} &ato player &e{2}"
+    remove: "&aRemoved &6{0} {1} &afrom player &e{2}"
+    give:
+      success: "&aYou transferred &6{0} {1} &ato player &e{2}"
+      failed: "&cFailed to transfer funds: {0}"
+    balance: "&aYour balance for currency &e{0} &a- &6{1}"
+    top:
+      header: "&6===== Top {0} for currency {1} ====="
+      entry: "&e#{0} &f{1}: &6{2} {3}"
+      empty: "&cNo data to display"
+      loading: "&eLoading data..."
+
+# ============= errors =============
+errors:
+  invalid-amount: "&cInvalid amount: &e{0}"
+  insufficient-funds: "&cInsufficient funds: &e{0} {1}"
+  database:
+    connection-failed: "&cDatabase connection error: {0}"
+    save-failed: "&cFailed to save data"
+    backup-failed: "&cBackup creation failed: {0}"
+    failover: "&eSwitching to backup database..."
+  security:
+    rate-limit: "&cTransaction limit exceeded. Please wait {0} seconds"
+    max-amount: "&cMaximum transaction amount exceeded: {0}"
+    self-transfer: "&cCannot transfer money to yourself"
+  redis:
+    connection-failed: "&cRedis connection error: {0}"
+  rabbitmq:
+    connection-failed: "&cRabbitMQ connection error: {0}"
+    publish-failed: "&cTransaction sending error: {0}"
+
+# ============= Admins =============
+admin:
+  backup-created: "&aBackup created: &e{0}"
+  update-available: "&cUpdate &e{0}&c available! Download: &n{1}"
+  metrics:
+    enabled: "&aMetrics enabled"
+    disabled: "&cMetrics disabled"
+  cache:
+    cleared: "&aCache cleared"
+    stats: "&aCache stats: &fHits: &e{0}&f, Misses: &e{1}"
+  performance:
+    stats: "&aPerformance: TPS: &e{0}&f, Memory: &e{1}MB&f, Transactions/sec: &e{2}"
+
+# ============= Logging =============
+logging:
+  transaction: "[{0}] {1} -> {2}: {3} {4} ({5})"
+  backup: "Backup created: {0}"
+  cleanup: "Old data cleaned: {0} records deleted"
+  cache:
+    hit: "Cache: hit {0}"
+    miss: "Cache: miss {0}"
+  security:
+    blocked: "Blocked suspicious transaction from {0}"
