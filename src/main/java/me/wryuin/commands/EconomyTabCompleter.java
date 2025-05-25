@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class EconomyTabCompleter implements TabCompleter {
 
     private final EconomyEngine plugin;
-    private final List<String> subCommands = List.of("create", "set", "add", "remove", "give");
+    private final List<String> subCommands = List.of("create", "set", "add", "remove", "give", "top");
 
     public EconomyTabCompleter(EconomyEngine plugin) {
         this.plugin = plugin;
@@ -50,6 +50,12 @@ public class EconomyTabCompleter implements TabCompleter {
 
             case "give":
                 completions.addAll(handleGiveCommand(sender, args, db));
+                break;
+
+            case "top":
+                if (args.length == 2) {
+                    completions.addAll(db.getCurrencies().keySet());
+                }
                 break;
         }
 

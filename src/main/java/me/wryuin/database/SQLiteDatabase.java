@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import java.util.LinkedHashMap;
 
 public class SQLiteDatabase implements DataBase {
     private final EconomyEngine plugin;
@@ -276,6 +277,23 @@ public class SQLiteDatabase implements DataBase {
             plugin.getLogger().log(Level.WARNING,
                     "Failed to log transaction for " + player + " currency " + currency, e);
         }
+    }
+
+    @Override
+    public Map<UUID, Double> getTopBalances(String currency, int limit) {
+        Map<UUID, Double> topBalances = new LinkedHashMap<>();
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT player_uuid, amount FROM balances WHERE currency_name = ? ORDER BY amount DESC LIMIT ?")) {
+            stmt.setString(1, currency);
+            stmt.setInt(2, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                topBalances.put(UUID.fromString(rs.getString("player_uuid")), rs.getDouble("amount"));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to get top balances for currency " + currency, e);
+        }
+        return topBalances;
     }
 
     @Override

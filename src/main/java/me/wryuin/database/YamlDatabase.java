@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
 
 public class YamlDatabase implements DataBase {
     private final EconomyEngine plugin;
@@ -165,6 +167,32 @@ public class YamlDatabase implements DataBase {
         dataConfig.set(logKey + ".amount", amount);
         dataConfig.set(logKey + ".operation", operation);
     }
+
+    @Override
+    public Map<UUID, Double> getTopBalances(String currency, int limit) {
+        Map<UUID, Double> allBalances = new HashMap<>();
+        ConfigurationSection playersSection = dataConfig.getConfigurationSection("players");
+        
+        if (playersSection != null) {
+            for (String uuidStr : playersSection.getKeys(false)) {
+                double balance = dataConfig.getDouble("players." + uuidStr + ".balances." + currency, 0);
+                if (balance > 0) {
+                    allBalances.put(UUID.fromString(uuidStr), balance);
+                }
+            }
+        }
+
+        return allBalances.entrySet().stream()
+                .sorted(Map.Entry.<UUID, Double>comparingByValue().reversed())
+                .limit(limit)
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (e1, e2) -> e1,
+                    LinkedHashMap::new
+                ));
+    }
+
     @Override
     public void close() throws Exception {
         saveAll();

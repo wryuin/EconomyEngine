@@ -10,6 +10,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+import java.util.UUID;
+
 public class EconomyCommand implements CommandExecutor {
     private final EconomyEngine plugin;
 
@@ -36,49 +39,56 @@ public class EconomyCommand implements CommandExecutor {
 
             case "create":
                 if (!sender.hasPermission("economyengine.create")) {
-                    sender.sendMessage("§cУ вас нет прав на эту команду!");
+                    sender.sendMessage(Messages.get("no-permission"));
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage("§cИспользование: /economy create <название> [символ]");
+                    sender.sendMessage(Messages.get("commands.economy.usage.create"));
                     return true;
                 }
                 String currencyName = args[1];
                 String symbol = args.length > 2 ? args[2] : "$";
                 if (db.createCurrency(currencyName, symbol)) {
-                    sender.sendMessage("§aВалюта " + currencyName + " успешно создана!");
+                    sender.sendMessage(Messages.get("commands.economy.created", currencyName));
                 } else {
-                    sender.sendMessage("§cВалюта " + currencyName + " уже существует!");
+                    sender.sendMessage(Messages.get("currency-not-found", currencyName));
                 }
                 return true;
 
             case "set":
                 if (!sender.hasPermission("economyengine.set")) {
-                    sender.sendMessage("§cУ вас нет прав на эту команду!");
+                    sender.sendMessage(Messages.get("no-permission"));
                     return true;
                 }
                 return handleSetCommand(sender, args, db);
 
             case "add":
                 if (!sender.hasPermission("economyengine.add")) {
-                    sender.sendMessage("§cУ вас нет прав на эту команду!");
+                    sender.sendMessage(Messages.get("no-permission"));
                     return true;
                 }
                 return handleAddRemoveCommand(sender, args, db, true);
 
             case "remove":
                 if (!sender.hasPermission("economyengine.remove")) {
-                    sender.sendMessage("§cУ вас нет прав на эту команду!");
+                    sender.sendMessage(Messages.get("no-permission"));
                     return true;
                 }
                 return handleAddRemoveCommand(sender, args, db, false);
 
             case "give":
                 if (!sender.hasPermission("economyengine.give") || !(sender instanceof Player)) {
-                    sender.sendMessage("§cУ вас нет прав на эту команду или вы не игрок!");
+                    sender.sendMessage(Messages.get("no-permission"));
                     return true;
                 }
                 return handleGiveCommand((Player) sender, args, db);
+
+            case "top":
+                if (!sender.hasPermission("economyengine.top")) {
+                    sender.sendMessage(Messages.get("no-permission"));
+                    return true;
+                }
+                return handleTopCommand(sender, args, db);
 
             default:
                 sendHelp(sender);
@@ -88,98 +98,178 @@ public class EconomyCommand implements CommandExecutor {
 
     private boolean handleSetCommand(CommandSender sender, String[] args, DataBase db) {
         if (args.length < 4) {
-            sender.sendMessage("§cИспользование: /economy set <количество> <валюта> <игрок>");
+            sender.sendMessage(Messages.get("commands.economy.usage.set"));
             return true;
         }
 
         try {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[3]);
+            String playerName = args[3];
+            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            if (target == null) {
+                try {
+                    UUID uuid = UUID.fromString(playerName);
+                    target = Bukkit.getPlayer(uuid);
+                    if (target == null) {
+                        target = Bukkit.getOfflinePlayer(uuid);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Not a UUID
+                }
+            }
+            if (target == null) {
+                sender.sendMessage(Messages.get("player-not-found", playerName));
+                return true;
+            }
 
             if (!db.currencyExists(currency)) {
-                sender.sendMessage("§cВалюта " + currency + " не существует!");
+                sender.sendMessage(Messages.get("currency-not-found", currency));
                 return true;
             }
 
             db.setBalance(target, currency, amount);
-            sender.sendMessage("§aБаланс игрока " + target.getName() + " установлен на " + amount + " " + currency);
+            sender.sendMessage(Messages.get("commands.economy.set", target.getName(), currency, amount));
             return true;
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cНеверное количество!");
+            sender.sendMessage(Messages.get("errors.invalid-amount", args[1]));
             return true;
         }
     }
 
     private boolean handleAddRemoveCommand(CommandSender sender, String[] args, DataBase db, boolean isAdd) {
         if (args.length < 4) {
-            sender.sendMessage("§cИспользование: /economy " + (isAdd ? "add" : "remove") + " <количество> <валюта> <игрок>");
+            sender.sendMessage(Messages.get("commands.economy.usage." + (isAdd ? "add" : "remove")));
             return true;
         }
 
         try {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[3]);
+            String playerName = args[3];
+            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            if (target == null) {
+                try {
+                    UUID uuid = UUID.fromString(playerName);
+                    target = Bukkit.getPlayer(uuid);
+                    if (target == null) {
+                        target = Bukkit.getOfflinePlayer(uuid);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Not a UUID
+                }
+            }
+            if (target == null) {
+                sender.sendMessage(Messages.get("player-not-found", playerName));
+                return true;
+            }
 
             if (!db.currencyExists(currency)) {
-                sender.sendMessage("§cВалюта " + currency + " не существует!");
+                sender.sendMessage(Messages.get("currency-not-found", currency));
                 return true;
             }
 
             if (isAdd) {
                 db.addBalance(target, currency, amount);
-                sender.sendMessage("§aДобавлено " + amount + " " + currency + " игроку " + target.getName());
+                sender.sendMessage(Messages.get("commands.economy.add", amount, currency, target.getName()));
             } else {
                 db.removeBalance(target, currency, amount);
-                sender.sendMessage("§aУдалено " + amount + " " + currency + " у игрока " + target.getName());
+                sender.sendMessage(Messages.get("commands.economy.remove", amount, currency, target.getName()));
             }
             return true;
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cНеверное количество!");
+            sender.sendMessage(Messages.get("errors.invalid-amount", args[1]));
             return true;
         }
     }
 
     private boolean handleGiveCommand(Player sender, String[] args, DataBase db) {
         if (args.length < 4) {
-            sender.sendMessage("§cИспользование: /economy give <количество> <валюта> <игрок>");
+            sender.sendMessage(Messages.get("commands.economy.usage.give"));
             return true;
         }
 
         try {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[3]);
+            String playerName = args[3];
+            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            if (target == null) {
+                try {
+                    UUID uuid = UUID.fromString(playerName);
+                    target = Bukkit.getPlayer(uuid);
+                    if (target == null) {
+                        target = Bukkit.getOfflinePlayer(uuid);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Not a UUID
+                }
+            }
+            if (target == null) {
+                sender.sendMessage(Messages.get("player-not-found", playerName));
+                return true;
+            }
 
             if (!db.currencyExists(currency)) {
-                sender.sendMessage("§cВалюта " + currency + " не существует!");
+                sender.sendMessage(Messages.get("currency-not-found", currency));
                 return true;
             }
 
             if (db.transferBalance(sender, target, currency, amount)) {
-                sender.sendMessage("§aВы передали " + amount + " " + currency + " игроку " + target.getName());
+                sender.sendMessage(Messages.get("commands.economy.give.success", amount, currency, target.getName()));
             } else {
-                sender.sendMessage("§cУ вас недостаточно средств или произошла ошибка!");
+                sender.sendMessage(Messages.get("commands.economy.give.failed", Messages.get("errors.insufficient-funds", amount, currency)));
             }
             return true;
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cНеверное количество!");
+            sender.sendMessage(Messages.get("errors.invalid-amount", args[1]));
             return true;
         }
     }
 
+    private boolean handleTopCommand(CommandSender sender, String[] args, DataBase db) {
+        if (args.length < 2) {
+            sender.sendMessage(Messages.get("commands.economy.usage.top"));
+            return true;
+        }
+
+        String currency = args[1];
+        if (!db.currencyExists(currency)) {
+            sender.sendMessage(Messages.get("currency-not-found", currency));
+            return true;
+        }
+
+        sender.sendMessage(Messages.get("commands.economy.top.loading"));
+        Map<UUID, Double> topBalances = db.getTopBalances(currency, 10);
+        
+        if (topBalances.isEmpty()) {
+            sender.sendMessage(Messages.get("commands.economy.top.empty"));
+            return true;
+        }
+
+        sender.sendMessage(Messages.get("commands.economy.top.header", 10, currency));
+        int position = 1;
+        for (Map.Entry<UUID, Double> entry : topBalances.entrySet()) {
+            OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey());
+            String playerName = player.getName() != null ? player.getName() : entry.getKey().toString();
+            sender.sendMessage(Messages.get("commands.economy.top.entry", position++, playerName, entry.getValue(), currency));
+        }
+        return true;
+    }
+
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§6===== EconomyEngine Помощь =====");
+        sender.sendMessage(Messages.get("commands.economy.help-header"));
         if (sender.hasPermission("economyengine.create"))
-            sender.sendMessage("§e/economy create <название> [символ] - Создать валюту");
+            sender.sendMessage(Messages.get("commands.economy.help.create"));
         if (sender.hasPermission("economyengine.set"))
-            sender.sendMessage("§e/economy set <количество> <валюта> <игрок> - Установить баланс");
+            sender.sendMessage(Messages.get("commands.economy.help.set"));
         if (sender.hasPermission("economyengine.add"))
-            sender.sendMessage("§e/economy add <количество> <валюта> <игрок> - Добавить баланс");
+            sender.sendMessage(Messages.get("commands.economy.help.add"));
         if (sender.hasPermission("economyengine.remove"))
-            sender.sendMessage("§e/economy remove <количество> <валюта> <игрок> - Удалить баланс");
+            sender.sendMessage(Messages.get("commands.economy.help.remove"));
         if (sender.hasPermission("economyengine.give") && sender instanceof Player)
-            sender.sendMessage("§e/economy give <количество> <валюта> <игрок> - Передать валюту");
+            sender.sendMessage(Messages.get("commands.economy.help.give"));
+        if (sender.hasPermission("economyengine.top"))
+            sender.sendMessage(Messages.get("commands.economy.help.top"));
     }
 }

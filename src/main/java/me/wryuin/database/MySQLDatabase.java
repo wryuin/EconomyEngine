@@ -7,17 +7,41 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class MySQLDatabase implements DataBase {
     private final EconomyEngine plugin;
     private Connection connection;
+    private final Queue<Transaction> logQueue = new ConcurrentLinkedQueue<>();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private DataSource dataSource;
+    private static final String INSERT_BATCH_SQL = 
+        "INSERT INTO transaction_logs (player_uuid, currency_name, amount, operation, timestamp) VALUES (?, ?, ?, ?, ?)";
 
     public MySQLDatabase(EconomyEngine plugin) {
         this.plugin = plugin;
+        setupDataSource();
+        startBatchProcessor();
+    }
+
+    private void setupDataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://" + plugin.getConfig().getString("mysql.host") + ":" + 
+                         plugin.getConfig().getInt("mysql.port") + "/" + 
+                         plugin.getConfig().getString("mysql.database") + "?useSSL=false");
+        config.setUsername(plugin.getConfig().getString("mysql.username"));
+        config.setPassword(plugin.getConfig().getString("mysql.password"));
+        config.setMaximumPoolSize(10);
+        
+        dataSource = new HikariDataSource(config);
     }
 
     private FileConfiguration getConfig() {
@@ -270,15 +294,15 @@ public class MySQLDatabase implements DataBase {
 
     @Override
     public void logTransaction(UUID player, String currency, double amount, String operation) {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "INSERT INTO transaction_logs (player_uuid, currency_name, amount, operation, timestamp) " +
-                        "VALUES (?, ?, ?, ?, ?)")) {
+        Transaction transaction = new Transaction(player, currency, amount, operation);
+        try (PreparedStatement stmt = connection.prepareStatement(INSERT_BATCH_SQL)) {
             stmt.setString(1, player.toString());
             stmt.setString(2, currency);
             stmt.setDouble(3, amount);
             stmt.setString(4, operation);
             stmt.setLong(5, System.currentTimeMillis());
             stmt.executeUpdate();
+            logQueue.add(transaction);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING,
                     "Failed to log transaction for " + player + " currency " + currency, e);
@@ -286,9 +310,69 @@ public class MySQLDatabase implements DataBase {
     }
 
     @Override
+    public Map<UUID, Double> getTopBalances(String currency, int limit) {
+        Map<UUID, Double> topBalances = new LinkedHashMap<>();
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT player_uuid, amount FROM balances WHERE currency_name = ? ORDER BY amount DESC LIMIT ?")) {
+            stmt.setString(1, currency);
+            stmt.setInt(2, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                topBalances.put(UUID.fromString(rs.getString("player_uuid")), rs.getDouble("amount"));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to get top balances for currency " + currency, e);
+        }
+        return topBalances;
+    }
+
+    private void startBatchProcessor() {
+        scheduler.scheduleAtFixedRate(() -> {
+            List<Transaction> batch = new ArrayList<>(100);
+            while (batch.size() < 100 && !logQueue.isEmpty()) {
+                batch.add(logQueue.poll());
+            }
+
+            if (!batch.isEmpty()) {
+                try (Connection conn = dataSource.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(INSERT_BATCH_SQL)) {
+
+                    for (Transaction t : batch) {
+                        stmt.setString(1, t.player().toString());
+                        stmt.setString(2, t.currency());
+                        stmt.setDouble(3, t.amount());
+                        stmt.setString(4, t.operation());
+                        stmt.setLong(5, t.timestamp());
+                        stmt.addBatch();
+                    }
+
+                    stmt.executeBatch();
+                } catch (SQLException e) {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to process transaction batch", e);
+                }
+            }
+        }, 5, 5, TimeUnit.SECONDS);
+    }
+
+    @Override
     public void close() throws Exception {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+            }
+        }
+        
         if (connection != null && !connection.isClosed()) {
             connection.close();
+        }
+        
+        if (dataSource instanceof AutoCloseable) {
+            ((AutoCloseable) dataSource).close();
         }
     }
 }
