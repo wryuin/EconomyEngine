@@ -3,7 +3,6 @@
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.16--1.19-green.svg)](https://www.minecraft.net)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![wakatime](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2.svg)](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2)
-[![Minecraft](https://img.shields.io/badge/Java-16-blue.svg)](https://www.minecraft.net)
 
 A feature-rich economy plugin for Paper/Spigot servers with multi-currency support, database flexibility, and PlaceholderAPI integration.
 
@@ -19,6 +18,7 @@ A feature-rich economy plugin for Paper/Spigot servers with multi-currency suppo
 - **Balance Management**
   - Set/add/remove balances with commands
   - Player-to-player transactions
+  - Top players leaderboard
 - **PlaceholderAPI Integration**
   - Real-time balance display in chat/UI
   - Multiple formatting options
@@ -42,8 +42,10 @@ A feature-rich economy plugin for Paper/Spigot servers with multi-currency suppo
 /economy add <amount> <currency> <player> # Add funds
 /economy remove <amount> <currency> <player> # Remove funds
 /economy give <amount> <currency> <player> # Transfer funds
+/economy top <currency> # View top 10 richest players
 ```
-# Permissions
+
+### Permissions
 ```yaml
 economyengine.use: # Base command access
 economyengine.create: # Create currencies
@@ -51,14 +53,17 @@ economyengine.set: # Set balances
 economyengine.add: # Add funds
 economyengine.remove: # Remove funds
 economyengine.give: # Transfer funds
+economyengine.top: # View top players
 ```
-# Placeholders 📊
+
+### Placeholders 📊
 ```yaml
 %EconomyEngine_value_<currency>%        # Raw balance (1000.5)
 %EconomyEngine_value_<currency>_fixed%  # Formatted (1,000.50)
 %EconomyEngine_value_<currency>_letter% # Shortened (1K, 1.5M)
 ```
-# Configuration 🛠️
+
+## Configuration 🛠️
 ```yaml
 # Database type: YAML, SQLITE, MYSQL
 database:
@@ -76,28 +81,36 @@ mysql:
   username: user
   password: password
 ```
-# Database Setup 🗃️
-# YAML (Default)
+
+## Database Setup 🗃️
+
+### YAML (Default)
 No setup required - uses data.yml
-# SQLite
+
+### SQLite
 Automatically creates economy.db
-# MySQL
+
+### MySQL
 1. Create database and user
 2. Update MySQL config section
 3. Set database type to "MYSQL"
-# FAQ ❓
-# Q: Can I use multiple currencies simultaneously?
+
+## FAQ ❓
+
+### Q: Can I use multiple currencies simultaneously?
 A: Yes! Create as many currencies as needed.
 
-# Q: How to migrate from YAML to MySQL?
+### Q: How to migrate from YAML to MySQL?
 A: Stop server → change config → restart. Data auto-migrates.
 
-# Q: Does it work with Vault?
+### Q: Does it work with Vault?
 A: Not natively, but PlaceholderAPI can bridge most features.
 
-# Q: How to backup data?
+### Q: How to backup data?
 A: For YAML: Backup data.yml. For SQL: Standard DB backup procedures.
-# License 📄
-MIT License Used
-# Need Help?
+
+## License 📄
+MIT License
+
+## Need Help?
 Open an issue
