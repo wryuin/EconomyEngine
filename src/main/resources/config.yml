@@ -1,12 +1,75 @@
-database:
-  type: SQLITE
-
-autosave:
-  interval: 2
+# Database Configuration
+storage:
+  type: sqlite # mysql, sqlite, yaml
+  backup: sqlite # backup storage type
 
 mysql:
   host: localhost
   port: 3306
   database: economy
-  username: user
-  password: password
+  username: root
+  password: ""
+  pool:
+    maxPoolSize: 10
+    minIdle: 5
+    maxLifetime: 1800000
+    connectionTimeout: 5000
+    idleTimeout: 600000
+
+sqlite:
+  file: economy.db
+
+# Redis Configuration
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+  password: ""
+  database: 0
+  pool:
+    maxTotal: 8
+    maxIdle: 8
+    minIdle: 0
+    testOnBorrow: true
+
+# RabbitMQ Configuration
+rabbitmq:
+  enabled: false
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+  virtualHost: /
+
+# Security Settings
+security:
+  maxTransactionAmount: 1000000.0
+  rateLimit:
+    maxTransactionsPerMinute: 10
+    timeoutSeconds: 1
+
+# Cache Settings
+cache:
+  player:
+    timeToLiveSeconds: 300
+    maxSize: 1000
+  top:
+    timeToLiveSeconds: 30
+    maxSize: 100
+
+# Metrics
+metrics:
+  bstats: true
+  micrometer: false
+
+# Performance
+performance:
+  batchSize: 100
+  asyncOperations: true
+  cleanupInterval: 3600 # in seconds
+
+# Backup
+backup:
+  enabled: true
+  interval: 86400 # daily in seconds
+  keepCount: 7 # number of backups to keep

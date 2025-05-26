@@ -6,7 +6,7 @@ softdepend: [PlaceholderAPI]
 commands:
   economy:
     description: Управление экономикой сервера
-    usage: /economy <create/set/add/remove/give>
+    usage: /economy <create/set/add/remove/give/top>
     permission: economyengine.use
     permission-message: У вас нет прав на эту команду!
 
@@ -29,6 +29,9 @@ permissions:
   economyengine.give:
     description: Передача валюты другому игроку
     default: true
-    economyengine.reload:
-      description: Reload plugin data
-      default: op
+  economyengine.top:
+    description: Просмотр топа богатейших игроков
+    default: true
+  economyengine.reload:
+    description: Reload plugin data
+    default: op
