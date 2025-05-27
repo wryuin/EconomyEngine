@@ -2,7 +2,6 @@
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.16--1.19-green.svg)](https://www.minecraft.net)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![wakatime](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2.svg)](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2)
 
 A feature-rich economy plugin for Paper/Spigot servers with multi-currency support, database flexibility, and PlaceholderAPI integration.
 
