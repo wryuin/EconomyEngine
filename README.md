@@ -2,8 +2,11 @@
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.16--1.19-green.svg)](https://www.minecraft.net)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/Version-1.3.0-orange.svg)](https://github.com/wryuin/EconomyEngine/releases)
+[![wakatime](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2.svg)](https://wakatime.com/badge/user/1b3b3898-ae4b-459a-ba4b-378476547f43/project/1465faaa-1eb1-4f57-97bb-a0a3350dcbc2)
 
 A feature-rich economy plugin for Paper/Spigot servers with multi-currency support, database flexibility, and PlaceholderAPI integration.
+
 
 ## Features ✨
 
@@ -24,6 +27,9 @@ A feature-rich economy plugin for Paper/Spigot servers with multi-currency suppo
 - **Auto-Save & Logging**
   - Configurable save intervals
   - Complete transaction history
+- **User-Friendly GUI**
+  - Manage currencies and balances visually
+  - View top players and statistics
 
 ## Installation 📦
 
@@ -42,6 +48,7 @@ A feature-rich economy plugin for Paper/Spigot servers with multi-currency suppo
 /economy remove <amount> <currency> <player> # Remove funds
 /economy give <amount> <currency> <player> # Transfer funds
 /economy top <currency> # View top 10 richest players
+/economygui # Open the economy management GUI
 ```
 
 ### Permissions
@@ -53,6 +60,7 @@ economyengine.add: # Add funds
 economyengine.remove: # Remove funds
 economyengine.give: # Transfer funds
 economyengine.top: # View top players
+economyengine.gui: # Access to economy GUI
 ```
 
 ### Placeholders 📊
@@ -60,6 +68,8 @@ economyengine.top: # View top players
 %EconomyEngine_value_<currency>%        # Raw balance (1000.5)
 %EconomyEngine_value_<currency>_fixed%  # Formatted (1,000.50)
 %EconomyEngine_value_<currency>_letter% # Shortened (1K, 1.5M)
+%EconomyEngine_Top_<currency>_<place>%  # Player name at position (1-10)
+%EconomyEngine_Top_<currency>_<place>_money% # Player balance at position (1-10)
 ```
 
 ## Configuration 🛠️
@@ -107,6 +117,9 @@ A: Not natively, but PlaceholderAPI can bridge most features.
 
 ### Q: How to backup data?
 A: For YAML: Backup data.yml. For SQL: Standard DB backup procedures.
+
+### Q: Is the plugin thread-safe?
+A: Yes! Version 1.3.0 introduces enhanced thread safety and concurrent access handling.
 
 ## License 📄
 MIT License

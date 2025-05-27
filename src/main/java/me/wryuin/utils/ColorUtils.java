@@ -108,9 +108,6 @@ public class ColorUtils {
         return colors;
     }
 
-    /**
-     * Преобразует список строк с цветовыми кодами
-     */
     public static List<String> colorize(List<String> list) {
         list.replaceAll(ColorUtils::colorize);
         return list;

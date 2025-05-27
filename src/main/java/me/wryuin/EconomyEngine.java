@@ -2,8 +2,11 @@ package me.wryuin;
 
 import me.wryuin.commands.EconomyCommand;
 import me.wryuin.commands.EconomyTabCompleter;
+import me.wryuin.commands.GUICommand;
 import me.wryuin.database.*;
 import me.wryuin.events.JoinListener;
+import me.wryuin.gui.EconomyGUI;
+import me.wryuin.gui.GUIListener;
 import me.wryuin.placeholders.EconomyPlaceholders;
 import me.wryuin.utils.BackupManager;
 import me.wryuin.utils.ConfigManager;
@@ -11,42 +14,60 @@ import me.wryuin.utils.Messages;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EconomyEngine extends JavaPlugin {
-    private static EconomyEngine instance;
+    private static volatile EconomyEngine instance;
     private DataBase database;
     private ConfigManager configManager;
     private CacheManager cacheManager;
     private BackupManager backupManager;
     private UpdateChecker updateChecker;
+    private EconomyGUI economyGUI;
 
 
     @Override
     public void reloadConfig() {
         super.reloadConfig();
-        configManager.onConfigReload();
+        if (configManager != null) {
+            configManager.onConfigReload();
+        }
+        if (economyGUI != null) {
+            economyGUI.reloadConfig();
+        }
     }
 
     @Override
     public void onEnable() {
+        instance = this;
         this.configManager = new ConfigManager(this);
         configManager.initialLoad();
-        instance = this;
         saveDefaultConfig();
         setupDatabase();
-        getCommand("economy").setExecutor(new EconomyCommand(this));
-        getCommand("economy").setTabCompleter(new EconomyTabCompleter(this));
+        
+        if (getCommand("economy") != null) {
+            getCommand("economy").setExecutor(new EconomyCommand(this));
+            getCommand("economy").setTabCompleter(new EconomyTabCompleter(this));
+        }
+        
+        this.economyGUI = new EconomyGUI(this);
+        
+        if (getCommand("economygui") != null) {
+            getCommand("economygui").setExecutor(new GUICommand(this, economyGUI));
+        }
+        
+        getServer().getPluginManager().registerEvents(new GUIListener(this, economyGUI), this);
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         this.cacheManager = new CacheManager(this);
         this.backupManager = new BackupManager(this);
         this.updateChecker = new UpdateChecker(this);
         saveResource("messages.yml", false);
         Messages.init(this);
+        
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new EconomyPlaceholders(this).register();
         }
 
         setupAutoSave();
 
-        getLogger().info("EconomyEngine успешно запущен!");
+        getLogger().info("EconomyEngine enabled");
     }
 
     @Override
@@ -54,7 +75,7 @@ public class EconomyEngine extends JavaPlugin {
         if (database != null) {
             database.saveAll();
         }
-        getLogger().info("EconomyEngine успешно выключен!");
+        getLogger().info("EconomyEngine disabled");
     }
 
     private void setupDatabase() {
@@ -77,6 +98,10 @@ public class EconomyEngine extends JavaPlugin {
 
     private void setupAutoSave() {
         int interval = configManager.getAutoSaveInterval() * 60 * 20;
+        if (interval <= 0) {
+            interval = 6000;
+        }
+        
         getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             if (database != null) {
                 database.saveAll();
@@ -84,6 +109,7 @@ public class EconomyEngine extends JavaPlugin {
             }
         }, interval, interval);
     }
+
 
     public static EconomyEngine getInstance() {
         return instance;
@@ -96,7 +122,12 @@ public class EconomyEngine extends JavaPlugin {
     public ConfigManager getConfigManager() {
         return configManager;
     }
+    
     public CacheManager getCacheManager() {
         return cacheManager;
+    }
+    
+    public EconomyGUI getEconomyGUI() {
+        return economyGUI;
     }
 }

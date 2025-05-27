@@ -37,7 +37,7 @@ public class MessageBroker {
         // Declare exchange
         channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC, true);
 
-        // Declare queue with server-specific name
+        // Declare queue with server ip
         String queueName = QUEUE_PREFIX + plugin.getServer().getPort();
         channel.queueDeclare(queueName, true, false, false, null);
         channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY);

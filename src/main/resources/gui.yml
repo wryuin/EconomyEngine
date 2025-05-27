@@ -1,0 +1,130 @@
+# GUI Configuration for EconomyEngine
+gui:
+  # Main menu settings
+  main_menu:
+    title: "Economy Management"
+    size: 27  # Must be a multiple of 9
+    items:
+      currencies:
+        slot: 10
+        material: GOLD_INGOT
+        name: "&6Currencies"
+        lore:
+          - "&7Manage your server currencies"
+          - "&7Click to view all currencies"
+      top_balances:
+        slot: 12
+        material: DIAMOND
+        name: "&bTop Balances"
+        lore:
+          - "&7View players with highest balances"
+          - "&7Click to select a currency"
+      player_management:
+        slot: 14
+        material: PLAYER_HEAD
+        name: "&aPlayer Management"
+        lore:
+          - "&7Manage player balances"
+          - "&7Click to select a player"
+      settings:
+        slot: 16
+        material: REDSTONE_COMPARATOR
+        name: "&cSettings"
+        lore:
+          - "&7Configure economy settings"
+      close:
+        slot: 22
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"
+
+  # Currency management menu
+  currency_menu:
+    title: "Currency Management"
+    size: 36
+    items:
+      create_currency:
+        slot: 31
+        material: EMERALD
+        name: "&aCreate New Currency"
+        lore:
+          - "&7Click to create a new currency"
+      back:
+        slot: 27
+        material: ARROW
+        name: "&7Back"
+        lore:
+          - "&7Return to main menu"
+      close:
+        slot: 35
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"
+
+  # Player management menu
+  player_menu:
+    title: "Player Management"
+    size: 54
+    items:
+      back:
+        slot: 45
+        material: ARROW
+        name: "&7Back"
+        lore:
+          - "&7Return to main menu"
+      close:
+        slot: 53
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"
+
+  # Player balance menu
+  player_balance_menu:
+    title: "%player%'s Balances"
+    size: 54
+    items:
+      add:
+        slot: 48
+        material: LIME_DYE
+        name: "&aAdd Money"
+        lore:
+          - "&7Click to add money to this currency"
+      remove:
+        slot: 50
+        material: RED_DYE
+        name: "&cRemove Money"
+        lore:
+          - "&7Click to remove money from this currency"
+      back:
+        slot: 45
+        material: ARROW
+        name: "&7Back"
+        lore:
+          - "&7Return to player selection"
+      close:
+        slot: 53
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"
+
+  # Top balances menu
+  top_menu:
+    title: "Top Balances - %currency%"
+    size: 54
+    items:
+      back:
+        slot: 45
+        material: ARROW
+        name: "&7Back"
+        lore:
+          - "&7Return to main menu"
+      close:
+        slot: 53
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"

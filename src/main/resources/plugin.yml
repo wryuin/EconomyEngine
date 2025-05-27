@@ -9,7 +9,10 @@ commands:
     usage: /economy <create/set/add/remove/give/top>
     permission: economyengine.use
     permission-message: У вас нет прав на эту команду!
-
+  economygui:
+    description: Open the economy management GUI
+    aliases: [ecogui, econgui]
+    usage: /economygui
 permissions:
   economyengine.use:
     description: Доступ к базовым командам экономики
@@ -34,4 +37,10 @@ permissions:
     default: true
   economyengine.reload:
     description: Reload plugin data
+    default: op
+  economyengine.admin:
+    description: Allows access to all EconomyEngine commands
+    default: op
+  economyengine.gui:
+    description: Allows access to the EconomyEngine GUI
     default: op

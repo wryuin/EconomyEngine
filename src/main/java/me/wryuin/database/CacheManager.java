@@ -20,7 +20,6 @@ public class CacheManager {
     private final LoadingCache<UUID, PlayerData> playerCache;
     private final Map<TopCacheKey, Map<UUID, Double>> topBalanceCache;
     private final LoadingCache<TopCacheKey, List<TopEntry>> topCache;
-    private static final long CACHE_DURATION = 60000;
     
 
     public CacheManager(EconomyEngine plugin) {
@@ -44,7 +43,13 @@ public class CacheManager {
         List<TopEntry> result = new ArrayList<>();
         Map<UUID, Double> balances = plugin.getDatabase().getTopBalances(key.currency(), key.limit());
         
+        if (balances == null || balances.isEmpty()) {
+            return result;
+        }
+        
         for (Map.Entry<UUID, Double> entry : balances.entrySet()) {
+            if (entry.getKey() == null) continue;
+            
             OfflinePlayer player = Bukkit.getOfflinePlayer(entry.getKey());
             String name = player.getName() != null ? player.getName() : entry.getKey().toString();
             result.add(new TopEntry(entry.getKey(), name, entry.getValue()));
@@ -54,6 +59,9 @@ public class CacheManager {
     }
 
     private PlayerData loadFromDatabase(UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
         return plugin.getDatabase().loadPlayerData(uuid);
     }
 
@@ -64,10 +72,17 @@ public class CacheManager {
     }
 
     public PlayerData getPlayerData(UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
         return playerCache.get(uuid);
     }
 
     public Map<UUID, Double> getTopBalances(String currency, int limit) {
+        if (currency == null || currency.isEmpty()) {
+            return new ConcurrentHashMap<>();
+        }
+        
         TopCacheKey key = new TopCacheKey(currency, limit);
         Map<UUID, Double> cached = topBalanceCache.get(key);
         if (cached != null) {
@@ -75,11 +90,18 @@ public class CacheManager {
         }
 
         Map<UUID, Double> fresh = plugin.getDatabase().getTopBalances(currency, limit);
-        topBalanceCache.put(key, fresh);
+        if (fresh != null) {
+            topBalanceCache.put(key, fresh);
+        } else {
+            fresh = new ConcurrentHashMap<>();
+        }
         return fresh;
     }
 
     public void invalidateTopBalances(String currency) {
+        if (currency == null) {
+            return;
+        }
         topBalanceCache.keySet().removeIf(key -> key.currency().equals(currency));
         topCache.invalidateAll();
     }

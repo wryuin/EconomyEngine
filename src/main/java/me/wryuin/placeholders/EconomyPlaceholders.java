@@ -4,11 +4,21 @@ import me.wryuin.EconomyEngine;
 import me.wryuin.database.DataBase;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.wryuin.utils.NumberFormatter;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EconomyPlaceholders extends PlaceholderExpansion {
     private final EconomyEngine plugin;
     private final DataBase database;
+    
+    private final Map<String, Map<UUID, Double>> topPlayersCache = new ConcurrentHashMap<>();
+    private long lastCacheUpdate = 0;
+    private static final long CACHE_DURATION = 300000;
 
     public EconomyPlaceholders(EconomyEngine plugin) {
         this.plugin = plugin;
@@ -40,25 +50,83 @@ public class EconomyPlaceholders extends PlaceholderExpansion {
         DataBase db = plugin.getDatabase();
         String[] parts = params.split("_");
 
-        if (parts.length < 3 || !parts[0].equalsIgnoreCase("value")) {
-            return null;
+        // Handle value placeholders
+        if (parts.length >= 3 && parts[0].equalsIgnoreCase("value")) {
+            String currency = parts[1];
+            if (!db.currencyExists(currency)) {
+                return "0";
+            }
+
+            double value = db.getBalance(player, currency);
+            String formatType = parts[2];
+
+            switch (formatType.toLowerCase()) {
+                case "fixed":
+                    return NumberFormatter.formatWithCommas(value);
+                case "letter":
+                    return NumberFormatter.formatToLetter(value);
+                default:
+                    return String.valueOf(value);
+            }
+        }
+        
+        // Handle top placeholders
+        if (parts.length >= 3 && parts[0].equalsIgnoreCase("Top")) {
+            String currency = parts[1];
+            if (!db.currencyExists(currency)) {
+                return "Unknown";
+            }
+            
+            try {
+                int position = Integer.parseInt(parts[2]);
+                if (position < 1 || position > 10) {
+                    return "Invalid position";
+                }
+                
+                if (parts.length >= 4 && parts[3].equalsIgnoreCase("money")) {
+                    return getTopPlayerMoney(currency, position);
+                } else {
+                    return getTopPlayerName(currency, position);
+                }
+            } catch (NumberFormatException e) {
+                return "Invalid position";
+            }
         }
 
-        String currency = parts[1];
-        if (!db.currencyExists(currency)) {
+        return null;
+    }
+    
+    private String getTopPlayerName(String currency, int position) {
+        Map<UUID, Double> topBalances = getTopBalancesFromCache(currency);
+        if (topBalances.size() < position) {
+            return "N/A";
+        }
+        
+        UUID playerId = topBalances.keySet().toArray(new UUID[0])[position - 1];
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+        return player.getName() != null ? player.getName() : playerId.toString().substring(0, 8);
+    }
+    
+    private String getTopPlayerMoney(String currency, int position) {
+        Map<UUID, Double> topBalances = getTopBalancesFromCache(currency);
+        if (topBalances.size() < position) {
             return "0";
         }
-
-        double value = db.getBalance(player, currency);
-        String formatType = parts[2];
-
-        switch (formatType.toLowerCase()) {
-            case "fixed":
-                return NumberFormatter.formatWithCommas(value);
-            case "letter":
-                return NumberFormatter.formatToLetter(value);
-            default:
-                return String.valueOf(value);
+        
+        Double amount = topBalances.values().toArray(new Double[0])[position - 1];
+        return NumberFormatter.formatWithCommas(amount);
+    }
+    
+    private Map<UUID, Double> getTopBalancesFromCache(String currency) {
+        long currentTime = System.currentTimeMillis();
+        
+        // Update cache if expired or if it doesn't contain data for this currency
+        if (currentTime - lastCacheUpdate > CACHE_DURATION || !topPlayersCache.containsKey(currency)) {
+            Map<UUID, Double> topBalances = database.getTopBalances(currency, 10);
+            topPlayersCache.put(currency, topBalances);
+            lastCacheUpdate = currentTime;
         }
+        
+        return topPlayersCache.getOrDefault(currency, new HashMap<>());
     }
 }
