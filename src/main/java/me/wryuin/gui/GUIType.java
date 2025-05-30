@@ -5,5 +5,5 @@ public enum GUIType {
     CURRENCY_MENU,
     PLAYER_MENU,
     PLAYER_BALANCE_MENU,
-    TOP_MENU,
+    TOP_BALANCES_MENU,
 }

@@ -1,6 +1,7 @@
 package me.wryuin.gui;
 
 import me.wryuin.EconomyEngine;
+import me.wryuin.utils.MessageSender;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -59,13 +60,13 @@ public class GUIListener implements Listener {
                 case PLAYER_BALANCE_MENU:
                     handlePlayerBalanceMenuClick(player, event.getSlot(), clickedItem);
                     break;
-                case TOP_MENU:
+                case TOP_BALANCES_MENU:
                     handleTopMenuClick(player, event.getSlot(), clickedItem);
                     break;
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling GUI click", e);
-            player.sendMessage("§cПроизошла ошибка при обработке клика. Пожалуйста, попробуйте снова.");
+            MessageSender.sendError(player, "Произошла ошибка при обработке клика. Пожалуйста, попробуйте снова.");
         }
     }
 
@@ -102,7 +103,7 @@ public class GUIListener implements Listener {
         
         if (slot == 31) { // Create currency
             player.closeInventory();
-            player.sendMessage("§aUse /economy createcurrency <n> <symbol> to create a new currency.");
+            MessageSender.send(player, "&aUse /economy create <name> <symbol> to create a new currency.");
             return;
         }
         
@@ -161,7 +162,7 @@ public class GUIListener implements Listener {
             if (session.getSelectedPlayer() != null) {
                 player.closeInventory();
                 String currency = session.getSelectedCurrency() != null ? session.getSelectedCurrency() : "default";
-                player.sendMessage("§aUse /economy give " + session.getSelectedPlayer() + " <amount> " + currency);
+                MessageSender.send(player, "&aUse /economy add <amount> " + currency + " " + session.getSelectedPlayer());
             }
             return;
         }
@@ -170,7 +171,7 @@ public class GUIListener implements Listener {
             if (session.getSelectedPlayer() != null) {
                 player.closeInventory();
                 String currency = session.getSelectedCurrency() != null ? session.getSelectedCurrency() : "default";
-                player.sendMessage("§aUse /economy take " + session.getSelectedPlayer() + " <amount> " + currency);
+                MessageSender.send(player, "&aUse /economy remove <amount> " + currency + " " + session.getSelectedPlayer());
             }
             return;
         }

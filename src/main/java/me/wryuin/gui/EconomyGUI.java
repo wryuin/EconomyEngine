@@ -37,13 +37,29 @@ public class EconomyGUI {
         File guiFile = new File(plugin.getDataFolder(), "gui.yml");
         if (!guiFile.exists()) {
             plugin.saveResource("gui.yml", false);
+            plugin.getLogger().info("Created new gui.yml file");
         }
-        this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
-        cachedConfigItems.clear();
+        
+        try {
+            this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+            cachedConfigItems.clear();
+            plugin.getLogger().info("GUI configuration loaded successfully");
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to load gui.yml: " + e.getMessage());
+            // Attempt recovery by using a new empty configuration
+            this.guiConfig = new YamlConfiguration();
+        }
     }
 
     public void reloadConfig() {
         loadGuiConfig();
+        // Clear all sessions to force reconstruction of inventories with updated config
+        for (GUISession session : sessions.values()) {
+            if (session.getPlayer() != null && session.getPlayer().isOnline()) {
+                session.getPlayer().closeInventory();
+            }
+        }
+        sessions.clear();
     }
 
     public GUISession getSession(Player player) {
@@ -327,54 +343,35 @@ public class EconomyGUI {
         }
 
         // Add top players
-        try {
-            Map<UUID, Double> topBalances = plugin.getCacheManager().getTopBalances(currencyName, 36);
-            int slot = 10;
-            int rank = 1;
-
-            if (topBalances != null && !topBalances.isEmpty()) {
-                for (Map.Entry<UUID, Double> entry : topBalances.entrySet()) {
-                    if (entry.getKey() == null) continue;
-                    
-                    ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-                    SkullMeta meta = (SkullMeta) item.getItemMeta();
-                    if (meta == null) continue;
-                    
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(entry.getKey());
-                    String playerName = offlinePlayer.getName() != null ? offlinePlayer.getName() : entry.getKey().toString();
-                    
-                    meta.setDisplayName(ChatColor.GOLD + "#" + rank + " " + playerName);
-
-                    List<String> lore = new ArrayList<>();
-                    Map<String, Currency> currencies = plugin.getDatabase().getCurrencies();
-                    Currency currency = currencies != null ? currencies.get(currencyName) : null;
-                    String symbol = currency != null ? currency.getSymbol() : "$";
-                    lore.add(ChatColor.GRAY + "Balance: " + symbol + entry.getValue());
-                    meta.setLore(lore);
-
-                    Player target = Bukkit.getPlayer(entry.getKey());
-                    if (target != null) {
-                        meta.setOwningPlayer(target);
-                    } else if (offlinePlayer != null) {
-                        meta.setOwningPlayer(offlinePlayer);
-                    }
-
-                    item.setItemMeta(meta);
-                    if (slot >= 0 && slot < size) {
-                        inventory.setItem(slot, item);
-                    }
-
-                    rank++;
-                    slot = 10 + ((rank - 1) % 7) + ((rank - 1) / 7) * 9;
-                    if (slot >= size) break;
-                }
+        Map<UUID, Double> topBalances = plugin.getDatabase().getTopBalances(currencyName, 36);
+        int i = 0;
+        int startSlot = 10;
+        
+        for (Map.Entry<UUID, Double> entry : topBalances.entrySet()) {
+            if (i >= 36) break;
+            
+            ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+            SkullMeta meta = (SkullMeta) item.getItemMeta();
+            if (meta != null) {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(entry.getKey());
+                meta.setOwningPlayer(offlinePlayer);
+                meta.setDisplayName(ChatColor.GOLD + (offlinePlayer.getName() != null ? offlinePlayer.getName() : entry.getKey().toString()));
+                
+                List<String> lore = new ArrayList<>();
+                lore.add(ChatColor.YELLOW + "Balance: " + entry.getValue() + " " + currencyName);
+                meta.setLore(lore);
+                item.setItemMeta(meta);
             }
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Error loading top balances for " + currencyName, e);
+
+            int slot = startSlot + (i % 7) + (i / 7) * 9;
+            if (slot >= 0 && slot < size) {
+                inventory.setItem(slot, item);
+            }
+            i++;
         }
 
         session.setCurrentInventory(inventory);
-        session.setCurrentType(GUIType.TOP_MENU);
+        session.setCurrentType(GUIType.TOP_BALANCES_MENU);
         session.setSelectedCurrency(currencyName);
         player.openInventory(inventory);
     }

@@ -1,7 +1,7 @@
 name: EconomyEngine
 version: '${project.version}'
 main: me.wryuin.EconomyEngine
-api-version: '1.16'
+api-version: '1.13'
 softdepend: [PlaceholderAPI]
 commands:
   economy:

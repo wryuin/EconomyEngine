@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 public class EconomyTabCompleter implements TabCompleter {
 
     private final EconomyEngine plugin;
-    private final List<String> subCommands = List.of("create", "set", "add", "remove", "give", "top");
+    private final List<String> subCommands = List.of("create", "set", "add", "remove", "give", "top", "reload");
+    private final List<String> reloadTypes = List.of("all", "config", "data");
 
     public EconomyTabCompleter(EconomyEngine plugin) {
         this.plugin = plugin;
@@ -57,9 +58,18 @@ public class EconomyTabCompleter implements TabCompleter {
                     completions.addAll(db.getCurrencies().keySet());
                 }
                 break;
+                
+            case "reload":
+                if (args.length == 2) {
+                    return filterSuggestions(args[1], reloadTypes);
+                }
+                break;
+                
+            default:
+                break;
         }
 
-        return completions.isEmpty() ? null : completions;
+        return completions.isEmpty() ? Collections.emptyList() : completions;
     }
 
     private List<String> handleAmountCurrencyPlayer(CommandSender sender, String[] args, DataBase db) {

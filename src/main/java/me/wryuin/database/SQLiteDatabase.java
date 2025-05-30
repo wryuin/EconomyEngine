@@ -164,8 +164,9 @@ public class SQLiteDatabase implements DataBase {
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT name, symbol FROM currencies")) {
             while (rs.next()) {
-                currencies.put(rs.getString("name"),
-                        new Currency(rs.getString("name"), rs.getString("symbol")));
+                String name = rs.getString("name");
+                currencies.put(name,
+                        new Currency(name, name, rs.getString("symbol")));
             }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, "Failed to get currencies", e);

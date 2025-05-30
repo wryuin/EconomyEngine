@@ -106,19 +106,28 @@ public class EconomyCommand implements CommandExecutor {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
             String playerName = args[3];
-            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            OfflinePlayer target = null;
+            
+            // Try to find player by name
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (p.getName().equalsIgnoreCase(playerName)) {
+                    target = p;
+                    break;
+                }
+            }
+            
+            // If not found online, try by UUID or look up offline player
             if (target == null) {
                 try {
                     UUID uuid = UUID.fromString(playerName);
-                    target = Bukkit.getPlayer(uuid);
-                    if (target == null) {
-                        target = Bukkit.getOfflinePlayer(uuid);
-                    }
+                    target = Bukkit.getOfflinePlayer(uuid);
                 } catch (IllegalArgumentException ignored) {
-                    // Not a UUID
+                    // Not a UUID, look up by name
+                    target = Bukkit.getOfflinePlayer(playerName);
                 }
             }
-            if (target == null) {
+
+            if (target == null || (!target.hasPlayedBefore() && !target.isOnline())) {
                 sender.sendMessage(Messages.get("player-not-found", playerName));
                 return true;
             }
@@ -147,19 +156,28 @@ public class EconomyCommand implements CommandExecutor {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
             String playerName = args[3];
-            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            OfflinePlayer target = null;
+            
+            // Try to find player by name
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (p.getName().equalsIgnoreCase(playerName)) {
+                    target = p;
+                    break;
+                }
+            }
+            
+            // If not found online, try by UUID or look up offline player
             if (target == null) {
                 try {
                     UUID uuid = UUID.fromString(playerName);
-                    target = Bukkit.getPlayer(uuid);
-                    if (target == null) {
-                        target = Bukkit.getOfflinePlayer(uuid);
-                    }
+                    target = Bukkit.getOfflinePlayer(uuid);
                 } catch (IllegalArgumentException ignored) {
-                    // Not a UUID
+                    // Not a UUID, look up by name
+                    target = Bukkit.getOfflinePlayer(playerName);
                 }
             }
-            if (target == null) {
+
+            if (target == null || (!target.hasPlayedBefore() && !target.isOnline())) {
                 sender.sendMessage(Messages.get("player-not-found", playerName));
                 return true;
             }
@@ -193,19 +211,28 @@ public class EconomyCommand implements CommandExecutor {
             double amount = Double.parseDouble(args[1]);
             String currency = args[2];
             String playerName = args[3];
-            OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+            OfflinePlayer target = null;
+            
+            // Try to find player by name
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (p.getName().equalsIgnoreCase(playerName)) {
+                    target = p;
+                    break;
+                }
+            }
+            
+            // If not found online, try by UUID or look up offline player
             if (target == null) {
                 try {
                     UUID uuid = UUID.fromString(playerName);
-                    target = Bukkit.getPlayer(uuid);
-                    if (target == null) {
-                        target = Bukkit.getOfflinePlayer(uuid);
-                    }
+                    target = Bukkit.getOfflinePlayer(uuid);
                 } catch (IllegalArgumentException ignored) {
-                    // Not a UUID
+                    // Not a UUID, look up by name
+                    target = Bukkit.getOfflinePlayer(playerName);
                 }
             }
-            if (target == null) {
+
+            if (target == null || (!target.hasPlayedBefore() && !target.isOnline())) {
                 sender.sendMessage(Messages.get("player-not-found", playerName));
                 return true;
             }

@@ -37,8 +37,6 @@ public class MetricsManager {
         registry.gauge("economy.players.active", activePlayersGauge);
         registry.gauge("economy.balance.total", totalBalanceGauge);
         
-        // bStats metrics
-        // TODO #1: Add plugin ID from bStats
         Metrics metrics = new Metrics(plugin, 25983);
         metrics.addCustomChart(new SingleLineChart("transactions", () -> 
             (int) transactionsCounter.count()));

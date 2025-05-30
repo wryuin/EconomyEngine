@@ -70,10 +70,10 @@ public class MessageBroker {
         // Execute on main thread
         Bukkit.getScheduler().runTask(plugin, () -> {
             plugin.getDatabase().transferBalance(
-                    Bukkit.getOfflinePlayer(message.from()),
-                    Bukkit.getOfflinePlayer(message.to()),
-                    message.currency(),
-                    message.amount()
+                    Bukkit.getOfflinePlayer(message.getFrom()),
+                    Bukkit.getOfflinePlayer(message.getTo()),
+                    message.getCurrency(),
+                    message.getAmount()
             );
         });
     }
@@ -90,6 +90,4 @@ public class MessageBroker {
             plugin.getLogger().severe(Messages.get("errors.rabbitmq.connection-failed", e.getMessage()));
         }
     }
-
-    private record TransactionMessage(UUID from, UUID to, String currency, double amount) {}
 } 

@@ -47,31 +47,42 @@ public class EconomyPlaceholders extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
+        if (player == null) {
+            return "";
+        }
+        
         DataBase db = plugin.getDatabase();
         String[] parts = params.split("_");
 
         // Handle value placeholders
-        if (parts.length >= 3 && parts[0].equalsIgnoreCase("value")) {
+        if (parts.length >= 2 && parts[0].equalsIgnoreCase("value")) {
             String currency = parts[1];
             if (!db.currencyExists(currency)) {
                 return "0";
             }
 
             double value = db.getBalance(player, currency);
-            String formatType = parts[2];
-
-            switch (formatType.toLowerCase()) {
-                case "fixed":
-                    return NumberFormatter.formatWithCommas(value);
-                case "letter":
-                    return NumberFormatter.formatToLetter(value);
-                default:
-                    return String.valueOf(value);
+            
+            // Handle different formats
+            if (parts.length >= 3) {
+                String formatType = parts[2];
+                switch (formatType.toLowerCase()) {
+                    case "fixed":
+                        return NumberFormatter.formatWithCommas(value);
+                    case "letter":
+                        return NumberFormatter.formatToLetter(value);
+                    case "formatted":
+                        return plugin.getDatabase().getCurrencies().get(currency).formatAmount(value);
+                    default:
+                        return String.valueOf(value);
+                }
             }
+            
+            return String.valueOf(value);
         }
         
         // Handle top placeholders
-        if (parts.length >= 3 && parts[0].equalsIgnoreCase("Top")) {
+        if (parts.length >= 3 && parts[0].equalsIgnoreCase("top")) {
             String currency = parts[1];
             if (!db.currencyExists(currency)) {
                 return "Unknown";
@@ -83,13 +94,43 @@ public class EconomyPlaceholders extends PlaceholderExpansion {
                     return "Invalid position";
                 }
                 
-                if (parts.length >= 4 && parts[3].equalsIgnoreCase("money")) {
-                    return getTopPlayerMoney(currency, position);
+                if (parts.length >= 4) {
+                    String type = parts[3].toLowerCase();
+                    switch (type) {
+                        case "money":
+                            return getTopPlayerMoney(currency, position);
+                        case "formatted":
+                            return getTopPlayerMoneyFormatted(currency, position);
+                        default:
+                            return getTopPlayerName(currency, position);
+                    }
                 } else {
                     return getTopPlayerName(currency, position);
                 }
             } catch (NumberFormatException e) {
                 return "Invalid position";
+            }
+        }
+        
+        // Handle currency information
+        if (parts.length >= 2 && parts[0].equalsIgnoreCase("currency")) {
+            String currency = parts[1];
+            if (!db.currencyExists(currency)) {
+                return "";
+            }
+            
+            if (parts.length >= 3) {
+                String property = parts[2].toLowerCase();
+                switch (property) {
+                    case "name":
+                        return db.getCurrencies().get(currency).getName();
+                    case "symbol":
+                        return db.getCurrencies().get(currency).getSymbol();
+                    case "format":
+                        return db.getCurrencies().get(currency).getFormat();
+                    default:
+                        return "";
+                }
             }
         }
 
@@ -117,16 +158,17 @@ public class EconomyPlaceholders extends PlaceholderExpansion {
         return NumberFormatter.formatWithCommas(amount);
     }
     
-    private Map<UUID, Double> getTopBalancesFromCache(String currency) {
-        long currentTime = System.currentTimeMillis();
-        
-        // Update cache if expired or if it doesn't contain data for this currency
-        if (currentTime - lastCacheUpdate > CACHE_DURATION || !topPlayersCache.containsKey(currency)) {
-            Map<UUID, Double> topBalances = database.getTopBalances(currency, 10);
-            topPlayersCache.put(currency, topBalances);
-            lastCacheUpdate = currentTime;
+    private String getTopPlayerMoneyFormatted(String currency, int position) {
+        Map<UUID, Double> topBalances = getTopBalancesFromCache(currency);
+        if (topBalances.size() < position) {
+            return "0";
         }
         
-        return topPlayersCache.getOrDefault(currency, new HashMap<>());
+        Double amount = topBalances.values().toArray(new Double[0])[position - 1];
+        return plugin.getDatabase().getCurrencies().get(currency).formatAmount(amount);
+    }
+    
+    private Map<UUID, Double> getTopBalancesFromCache(String currency) {
+        return plugin.getCacheManager().getTopBalances(currency, 10);
     }
 }

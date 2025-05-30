@@ -40,6 +40,13 @@ public class EconomyEngine extends JavaPlugin {
         this.configManager = new ConfigManager(this);
         configManager.initialLoad();
         saveDefaultConfig();
+        
+        // Save default resource files
+        saveResource("messages.yml", false);
+        saveResource("gui.yml", false);
+        
+        Messages.init(this);
+        
         setupDatabase();
         
         if (getCommand("economy") != null) {
@@ -58,8 +65,6 @@ public class EconomyEngine extends JavaPlugin {
         this.cacheManager = new CacheManager(this);
         this.backupManager = new BackupManager(this);
         this.updateChecker = new UpdateChecker(this);
-        saveResource("messages.yml", false);
-        Messages.init(this);
         
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new EconomyPlaceholders(this).register();

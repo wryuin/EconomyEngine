@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
+import org.bukkit.ChatColor;
 
 public class YamlDatabase implements DataBase {
     private final EconomyEngine plugin;
@@ -63,31 +64,59 @@ public class YamlDatabase implements DataBase {
         currencies.clear();
         ConfigurationSection currenciesSection = dataConfig.getConfigurationSection("currencies");
         if (currenciesSection != null) {
-            for (String currencyName : currenciesSection.getKeys(false)) {
-                String symbol = currenciesSection.getString(currencyName + ".symbol", "$");
-                currencies.put(currencyName, new Currency(currencyName, symbol));
+            for (String currencyId : currenciesSection.getKeys(false)) {
+                ConfigurationSection currSection = currenciesSection.getConfigurationSection(currencyId);
+                if (currSection != null) {
+                    String name = currSection.getString("name", currencyId);
+                    String symbol = currSection.getString("symbol", "$");
+                    String format = currSection.getString("format", "%s%,.2f %s");
+                    double defaultAmount = currSection.getDouble("defaultAmount", 0.0);
+                    double maxAmount = currSection.getDouble("maxAmount", Double.MAX_VALUE);
+                    boolean transferable = currSection.getBoolean("transferable", true);
+                    String colorName = currSection.getString("color", "WHITE");
+                    ChatColor color;
+                    try {
+                        color = ChatColor.valueOf(colorName);
+                    } catch (IllegalArgumentException e) {
+                        color = ChatColor.WHITE;
+                    }
+                    
+                    Currency currency = new Currency(
+                        currencyId, name, symbol, format, 
+                        defaultAmount, maxAmount, transferable, color
+                    );
+                    currencies.put(currencyId, currency);
+                }
             }
         }
     }
     public void reload() {
-        loadCurrencies();
         try {
             dataConfig = YamlConfiguration.loadConfiguration(dataFile);
+            loadCurrencies();
         } catch(Exception e) {
-            plugin.getLogger().severe("Failed to reload YAML data");
+            plugin.getLogger().severe("Failed to reload YAML data: " + e.getMessage());
         }
     }
     private void saveCurrencies() {
         ConfigurationSection currenciesSection = dataConfig.createSection("currencies");
         for (Currency currency : currencies.values()) {
-            currenciesSection.set(currency.getName() + ".symbol", currency.getSymbol());
+            ConfigurationSection currSection = currenciesSection.createSection(currency.getId());
+            currSection.set("name", currency.getName());
+            currSection.set("symbol", currency.getSymbol());
+            currSection.set("format", currency.getFormat());
+            currSection.set("defaultAmount", currency.getDefaultAmount());
+            currSection.set("maxAmount", currency.getMaxAmount());
+            currSection.set("transferable", currency.isTransferable());
+            currSection.set("color", currency.getColor().name());
         }
     }
 
     @Override
     public boolean createCurrency(String name, String symbol) {
         if (currencyExists(name)) return false;
-        currencies.put(name, new Currency(name, symbol));
+        Currency currency = new Currency(name.toLowerCase(), name, symbol);
+        currencies.put(name.toLowerCase(), currency);
         return true;
     }
 
