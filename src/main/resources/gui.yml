@@ -128,3 +128,21 @@ gui:
         name: "&4Close"
         lore:
           - "&7Close this menu"
+
+  # Top balances menu
+  top_balances_menu:
+    title: "Top Balances - %currency%"
+    size: 54
+    items:
+      back:
+        slot: 45
+        material: ARROW
+        name: "&7Back"
+        lore:
+          - "&7Return to main menu"
+      close:
+        slot: 53
+        material: BARRIER
+        name: "&4Close"
+        lore:
+          - "&7Close this menu"

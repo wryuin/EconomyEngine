@@ -46,7 +46,10 @@ public class SQLiteDatabase implements DataBase {
     public void initialize() {
         try {
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "/economy.db");
+            String dbFilePath = plugin.getConfig().getString("sqlite.file", "economy.db");
+            String fullPath = plugin.getDataFolder().getAbsolutePath() + "/" + dbFilePath;
+            plugin.getLogger().info("Attempting to connect to SQLite database at: " + fullPath);
+            connection = DriverManager.getConnection("jdbc:sqlite:" + fullPath);
 
             createTables();
             plugin.getLogger().info("SQLite database connected successfully");

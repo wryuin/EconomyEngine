@@ -11,6 +11,7 @@ import me.wryuin.placeholders.EconomyPlaceholders;
 import me.wryuin.utils.BackupManager;
 import me.wryuin.utils.ConfigManager;
 import me.wryuin.utils.Messages;
+import me.wryuin.metrics.MetricsManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EconomyEngine extends JavaPlugin {
@@ -65,6 +66,9 @@ public class EconomyEngine extends JavaPlugin {
         this.cacheManager = new CacheManager(this);
         this.backupManager = new BackupManager(this);
         this.updateChecker = new UpdateChecker(this);
+        // Initialize MetricsManager for bStats
+        MetricsManager metricsManager = new MetricsManager(this);
+        getLogger().info("MetricsManager initialized for bStats");
         
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new EconomyPlaceholders(this).register();

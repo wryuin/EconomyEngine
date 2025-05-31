@@ -44,6 +44,7 @@ public class EconomyGUI {
             this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
             cachedConfigItems.clear();
             plugin.getLogger().info("GUI configuration loaded successfully");
+            plugin.getLogger().info("GUI config sections: " + guiConfig.getKeys(false).toString());
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load gui.yml: " + e.getMessage());
             // Attempt recovery by using a new empty configuration
@@ -81,6 +82,7 @@ public class EconomyGUI {
             return;
         }
         
+        plugin.getLogger().info("Opening main menu for player: " + player.getName());
         GUISession session = getSession(player);
         ConfigurationSection menuConfig = guiConfig.getConfigurationSection("gui.main_menu");
         if (menuConfig == null) {
@@ -92,6 +94,7 @@ public class EconomyGUI {
         int size = menuConfig.getInt("size", 27);
 
         Inventory inventory = Bukkit.createInventory(null, size, title);
+        plugin.getLogger().info("Main menu inventory created with size: " + size);
 
         // Add items from config
         ConfigurationSection itemsSection = menuConfig.getConfigurationSection("items");

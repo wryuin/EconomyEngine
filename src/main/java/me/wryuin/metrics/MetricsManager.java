@@ -1,4 +1,3 @@
-// TODO №.1: fix the bstats. Who know how to connect bstats normal make a PR pls
 package me.wryuin.metrics;
 
 import io.micrometer.core.instrument.*;
@@ -38,11 +37,16 @@ public class MetricsManager {
         registry.gauge("economy.players.active", activePlayersGauge);
         registry.gauge("economy.balance.total", totalBalanceGauge);
         
-        Metrics metrics = new Metrics(plugin, 25983);
-        metrics.addCustomChart(new SingleLineChart("transactions", () -> 
-            (int) transactionsCounter.count()));
-        metrics.addCustomChart(new SimplePie("storage_type", () -> 
-            plugin.getConfig().getString("storage.type", "mysql")));
+        Metrics metrics;
+        try {
+            metrics = new Metrics(plugin, 25983);
+            metrics.addCustomChart(new SingleLineChart("transactions", () -> 
+                (int) transactionsCounter.count()));
+            metrics.addCustomChart(new SimplePie("storage_type", () -> 
+                plugin.getConfig().getString("storage.type", "mysql")));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to initialize bStats metrics: " + e.getMessage());
+        }
     }
 
     public void recordTransaction() {
