@@ -2,7 +2,7 @@
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.16--1.19-green.svg)](https://www.minecraft.net)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.3.0-orange.svg)](https://github.com/wryuin/EconomyEngine/releases)
+[![Version](https://img.shields.io/badge/Version-1.5-orange.svg)](https://github.com/wryuin/EconomyEngine/releases)
 
 A feature-rich economy plugin for Paper/Spigot servers with multi-currency support, database flexibility, and PlaceholderAPI integration.
 
